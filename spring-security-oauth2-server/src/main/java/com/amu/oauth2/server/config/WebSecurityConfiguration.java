@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -39,4 +40,19 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         // 将 check_token 暴露出去，否则资源服务器访问时报 403 错误
         web.ignoring().antMatchers("/oauth/check_token");
     }
+
+    protected void configure(HttpSecurity httpSecurity) throws Exception {
+       // httpSecurity.authorizeRequests().anyRequest().authenticated().and().oauth2Login().permitAll().and().logout().deleteCookies("JSESSIONID").permitAll();
+        httpSecurity
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin()
+                .and()
+                .httpBasic()
+                .and().logout()
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID");
+    }
+
 }

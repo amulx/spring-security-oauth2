@@ -1,0 +1,28 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: weixin
+          uri: http://172.16.18.18:82/
+          order: 1
+          predicates:
+            - Path=/weixin/{segment}
+        - id: auth
+          uri: http://172.16.18.46:8080/
+          order: 2
+          predicates:
+            - Path=/auth/**
+        - id: contents
+          uri: http://172.16.18.46:8082/
+          order: 3
+          predicates:
+            - Path=/contents/**
+server:
+  port: 9003
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+    reactor.ipc.netty: DEBUG
