@@ -1,16 +1,29 @@
 package com.amu.oauth2.server.config;
 
 import com.amu.oauth2.server.config.service.UserDetailsServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -50,9 +63,39 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .formLogin()
                 .and()
                 .httpBasic()
-                .and().logout()
+                .and()
+                .logout()
+                .logoutSuccessHandler(new LogoutSuccessHandler() {
+                    @Override
+                    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+                        new SecurityContextLogoutHandler().logout(request,null,null);
+
+                        System.out.println("===========登出成功================");
+                        PrintWriter printWriter = response.getWriter();
+                        response.setHeader("Content-Type", "application/json;charset=utf8");
+                        Map<String, String> msgMap = new HashMap<>();
+                        msgMap.put("result", "0");
+                        msgMap.put("msg", "logout success");
+                        ObjectMapper mapper = new ObjectMapper();
+                        printWriter.write(mapper.writeValueAsString(msgMap));
+                        printWriter.flush();
+                        printWriter.close();
+                    }
+                })
                 .invalidateHttpSession(true)
                 .deleteCookies("JSESSIONID");
+        httpSecurity.headers().cacheControl();//禁用缓存
+    }
+
+    /**
+     * 支持password模式要配置AuthenticationManager
+     * @return
+     * @throws Exception
+     */
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
 
 }

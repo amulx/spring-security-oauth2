@@ -28,6 +28,7 @@ security:
       token-info-uri: http://localhost:8080/oauth/check_token
 
 server:
+
   port: 8082
   servlet:
     context-path: /contents
