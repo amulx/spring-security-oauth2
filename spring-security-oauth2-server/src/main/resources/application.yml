@@ -1,4 +1,8 @@
 spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    timeout: 5000
   application:
     name: oauth2-server
   datasource:
@@ -19,8 +23,15 @@ spring:
 
 server:
   port: 8080
-#  servlet:
-#    context-path: /auth
+  servlet:
+    context-path: /auth
+
+auth:
+  tokenValiditySeconds: 1200 #token存储到redis的过期时间
+  clientId: client
+  clientSecret: secret
+  cookieDomain: skytest.com
+  cookieMaxAge: -1
 
 mybatis:
   type-aliases-package: com.amu.oauth2.server.domain

@@ -20,12 +20,14 @@ spring:
 security:
   oauth2:
     client:
-      client-id: client
+      client-id: pwd
       client-secret: secret
-      access-token-uri: http://localhost:8080/oauth/token
-      user-authorization-uri: http://localhost:8080/oauth/authorize
+      access-token-uri: http://localhost:8080/auth/oauth/token
+      user-authorization-uri: http://localhost:8080/auth/oauth/authorize
     resource:
-      token-info-uri: http://localhost:8080/oauth/check_token
+      jwt:
+        key-value: testKey
+      # token-info-uri: http://localhost:8080/auth/oauth/check_token
 
 server:
 

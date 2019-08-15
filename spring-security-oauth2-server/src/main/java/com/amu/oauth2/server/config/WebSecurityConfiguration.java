@@ -51,40 +51,15 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         // 将 check_token 暴露出去，否则资源服务器访问时报 403 错误
-        web.ignoring().antMatchers("/oauth/check_token");
+        web.ignoring().antMatchers("/oauth/check_token","/userlogout","/userjwt","/userlogin");
     }
 
-    protected void configure(HttpSecurity httpSecurity) throws Exception {
-       // httpSecurity.authorizeRequests().anyRequest().authenticated().and().oauth2Login().permitAll().and().logout().deleteCookies("JSESSIONID").permitAll();
-        httpSecurity
-                .authorizeRequests()
-                .anyRequest().authenticated()
-                .and()
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+                .httpBasic().and()
                 .formLogin()
                 .and()
-                .httpBasic()
-                .and()
-                .logout()
-                .logoutSuccessHandler(new LogoutSuccessHandler() {
-                    @Override
-                    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-                        new SecurityContextLogoutHandler().logout(request,null,null);
-
-                        System.out.println("===========登出成功================");
-                        PrintWriter printWriter = response.getWriter();
-                        response.setHeader("Content-Type", "application/json;charset=utf8");
-                        Map<String, String> msgMap = new HashMap<>();
-                        msgMap.put("result", "0");
-                        msgMap.put("msg", "logout success");
-                        ObjectMapper mapper = new ObjectMapper();
-                        printWriter.write(mapper.writeValueAsString(msgMap));
-                        printWriter.flush();
-                        printWriter.close();
-                    }
-                })
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID");
-        httpSecurity.headers().cacheControl();//禁用缓存
+                .authorizeRequests().anyRequest().authenticated();
     }
 
     /**
