@@ -1,22 +1,30 @@
 spring:
   cloud:
     gateway:
+      discovery:
+        locator:
+          # 是否可以通过其他服务的serviceId来转发到具体的服务实例。默认为false
+          # 为true,自动创建路由,路由访问方式：http://Gateway_HOST:Gateway_PORT/大写的serviceId/**，其中微服务应用名默认大写访问
+          enabled: false
+          lower-case-service-id: true #将请求路径上的服务名配置为小写（因为服务注册的时候，向注册中心注册时将服务名转成大写的了,比如以/service-hi/*的请求路径被路由转发到服务名为service-hi的服务上
       routes:
+        - id: resource
+          uri: http://127.0.0.1:8082/contents/
+          predicates:
+            - Path=/contents/**
+            - Cookie=uid, *
         - id: weixin
           uri: http://172.16.18.18:82/
           order: 1
+
+
           predicates:
-            - Path=/weixin/{segment}
+            - Path=/weixin/**
         - id: auth
           uri: http://172.16.18.46:8080/
           order: 2
           predicates:
             - Path=/auth/**
-        - id: contents
-          uri: http://172.16.18.46:8082/
-          order: 3
-          predicates:
-            - Path=/contents/**
 server:
   port: 9003
 
