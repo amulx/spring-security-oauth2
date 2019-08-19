@@ -3,6 +3,7 @@ package com.amu.oauth2.server.config;
 import com.amu.oauth2.server.config.service.CustomTokenEnhancer;
 import com.amu.oauth2.server.config.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -30,7 +32,7 @@ import java.util.Arrays;
 @Configuration
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
-
+    /*
     @Bean
     @Primary
     @ConfigurationProperties(prefix = "spring.datasource")
@@ -38,7 +40,11 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
         // 配置数据源（注意，我使用的是 HikariCP 连接池），以上注解是指定数据源，否则会有冲突
         return DataSourceBuilder.create().build();
     }
+    */
 
+    @Qualifier("dataSource")
+    @Autowired
+    private DataSource dataSource;
     /*
     @Bean
     public TokenStore tokenStore() {
@@ -83,7 +89,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     @Bean
     public ClientDetailsService jdbcClientDetails() {
         // 基于 JDBC 实现，需要事先在数据库配置客户端信息
-        return new JdbcClientDetailsService(dataSource());
+        return new JdbcClientDetailsService(dataSource);
     }
 
     /**
@@ -96,6 +102,10 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     public TokenEnhancer customTokenEnhancer(){
         return new CustomTokenEnhancer();
     }
+
+    @Autowired
+    UserDetailsService userDetailsService;
+
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
         // 将增强的token设置到增强链中
@@ -107,7 +117,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
         endpoints.tokenStore(jwtTokenStore()).tokenEnhancer(enhancerChain).accessTokenConverter(jwtAccessTokenConverter());
         // 顶级身份管理者
         endpoints.authenticationManager(authenticationManager);//支持 password grant type
-        endpoints.userDetailsService(new UserDetailsServiceImpl());
+        endpoints.userDetailsService(userDetailsService); // refresh_token 需要
     }
 
     @Override
