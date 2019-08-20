@@ -1,7 +1,9 @@
 package com.amu.oauth2.server.config;
 
 import com.amu.oauth2.server.config.service.UserDetailsServiceImpl;
+import com.amu.oauth2.server.filters.ValidateCodeFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 
@@ -51,11 +54,16 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         // 将 check_token 暴露出去，否则资源服务器访问时报 403 错误
-        web.ignoring().antMatchers("/oauth/check_token","/userlogout","/userjwt","/userlogin");
+        web.ignoring().antMatchers("/oauth/check_token","/userlogout","/userjwt","/userlogin","/imageCode");
     }
 
+
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable()
+        System.out.println("aaaa");
+
+        ValidateCodeFilter validateCodeFilter = new ValidateCodeFilter();
+
+        http.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class).csrf().disable()
                 .httpBasic().and()
                 .formLogin()
                 .and()

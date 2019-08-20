@@ -26,7 +26,15 @@ spring:
 server:
   port: 8080
   servlet:
+    session:
+      timeout: 86400
     context-path: /auth
+  use-forward-headers: true
+  undertow:
+    io-threads: 2 #设置 IO 线程数，它主要执行非阻塞的任务，它们会负责多个连接，默认设置每个 CPU 核心有一个线程。不要设置过大，如果过大，启动项日会报错：打开文件数过多
+    worker-threads: 8 #阳塞任务线程数，当执行类似 Servlet 请求阻塞 IO 操作，Undertow 会从这个线程池中取得线程。它的值设置取决于系统线程执行任务的阻塞系数，默认值：IO 线程数 * 8
+    buffer-size: 256 #每块 buffer 的空间大小，空间越小利用越充分，不要设置太大，以免影响其他应用，合适即可
+    direct-buffers: true #是否分配直接内存（NIO 直接分配的是堆外内存）
 
 auth:
   tokenValiditySeconds: 1200 #token存储到redis的过期时间
